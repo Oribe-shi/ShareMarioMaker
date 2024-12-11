@@ -3,35 +3,11 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Discord User Info</title>
-        <link rel="stylesheet" href="style.css" />
+        <title>サーバー</title>
+        <link rel="stylesheet" href="style.css" type="text/css" />
     </head>
     <body>
-        <h1>Discord User Info</h1>
-        <div id="user-info">Loading...</div>
-
-        <script>
-            async function fetchUserInfo() {
-                try {
-                    const response = await fetch("/api/discord");
-                    if (!response.ok) {
-                        throw new Error("Failed to fetch user info");
-                    }
-                    const userInfo = await response.json();
-                    document.getElementById("user-info").innerHTML = `
-                    <p>Username: ${userInfo.username}</p>
-                    <p>Discriminator: ${userInfo.discriminator}</p>
-                    <img src="https://cdn.discordapp.com/avatars/${userInfo.id}/${userInfo.avatar}.png" alt="Avatar" />
-                `;
-                } catch (error) {
-                    console.error(error);
-                    document.getElementById("user-info").innerText = "Error loading user info.";
-                }
-            }
-
-            fetchUserInfo();
-        </script>
-
-        <script src="main.js"></script>
+        <h1>index.html</h1>
+        <script src="script.js"></script>
     </body>
 </html>
