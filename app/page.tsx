@@ -10,38 +10,38 @@ export default function Home() {
 
     useEffect(() => {
         const initializeDiscordSdk = async () => {
-            // URLのクエリパラメータを取得
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // 'frame_id'がクエリに含まれているか確認
-            const frameIdFromUrl = urlParams.get("frame_id");
-            setFrameId(frameIdFromUrl);
-
-            if (!frameIdFromUrl) {
-                console.log("frame_id is not present in the URL.");
-            } else {
-                console.log("frame_id:", frameIdFromUrl);
-            }
-
             const discordSdk = new DiscordSDK(process.env.DISCORD_CLIENT_ID!);
 
             try {
-                // DiscordSDKの初期化を待機
+                // SDKの初期化
                 await discordSdk.ready();
 
-                // 'access_token'をURLから取得
-                const accessToken = urlParams.get("access_token");
-                if (!accessToken) {
-                    setError("Access token is missing.");
-                    return;
-                }
-
-                // 認証情報の取得
-                const auth = await discordSdk.commands.authenticate({
-                    access_token: accessToken,
+                // 認証コードの取得
+                const { code } = await discordSdk.commands.authorize({
+                    client_id: process.env.DISCORD_CLIENT_ID!,
+                    response_type: "code",
+                    state: "",
+                    prompt: "none",
+                    scope: ["identify"],
                 });
 
-                if (auth === null) {
+                // サーバーからアクセストークンを取得
+                const response = await fetch("/api/token", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ code }),
+                });
+
+                const { access_token } = await response.json();
+
+                // アクセストークンを使用して認証
+                const auth = await discordSdk.commands.authenticate({
+                    access_token,
+                });
+
+                if (!auth) {
                     setError("Authentication failed.");
                     return;
                 }
@@ -49,14 +49,13 @@ export default function Home() {
                 // ユーザー情報の取得
                 const user = await fetch("https://discord.com/api/v10/users/@me", {
                     headers: {
-                        Authorization: `Bearer ${accessToken}`,
+                        Authorization: `Bearer ${auth.access_token}`,
                         "Content-Type": "application/json",
                     },
                 }).then((response) => response.json());
 
-                // ユーザー名を設定
                 setUserName(user.global_name || user.username);
-            } catch (error: unknown) {
+            } catch (error) {
                 if (error instanceof Error) {
                     setError(error.message);
                 } else {
@@ -66,14 +65,12 @@ export default function Home() {
             }
         };
 
-        // DiscordSDKの初期化
         initializeDiscordSdk();
     }, []);
 
     return (
         <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
             <h1>Discord Activity</h1>
-            {/* frame_idを表示 */}
             <p>{frameId ? `Frame ID: ${frameId}` : "No frame_id found in the URL."}</p>
 
             {!userName ? (
