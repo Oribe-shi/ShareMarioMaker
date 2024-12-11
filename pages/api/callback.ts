@@ -43,7 +43,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const userData = await userResponse.json();
 
-        // ユーザー情報をセッションやクエリパラメータで渡す、リダイレクトを実行
+        // JSONレスポンスを返す
+        res.status(200).json(userData);
+
+        // その後リダイレクトも実施
         const redirectUrl = `/dashboard?username=${encodeURIComponent(userData.username)}`;
         res.redirect(302, redirectUrl);
     } catch (error: unknown) {
