@@ -1,32 +1,64 @@
+// app/index.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { DiscordSDK } from "@discord/embedded-app-sdk";
 
 export default function Home() {
     const [userName, setUserName] = useState<string | null>(null);
+    const [guildIcon, setGuildIcon] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await fetch("/api/callback"); // サーバーのエンドポイントを呼び出す
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserName(data.username); // 取得したユーザー名をセット
-                } else {
-                    setError("Failed to fetch user data. Please try again.");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                setError("An unexpected error occurred. Please try again later.");
-            }
-        };
+        const urlParams = new URLSearchParams(window.location.search);
+        const accessToken = urlParams.get("access_token");
 
-        fetchUserData();
+        if (accessToken) {
+            setupDiscordSdk(accessToken);
+        } else {
+            setError("Failed to retrieve user data.");
+        }
     }, []);
 
+    const setupDiscordSdk = async (accessToken: string) => {
+        const client_id = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID;
+        if (!client_id) throw new Error("Discord client ID not configured");
+
+        const discordSdk = new DiscordSDK(client_id);
+
+        try {
+            await discordSdk.ready();
+            const auth = await discordSdk.commands.authenticate({ access_token: accessToken });
+
+            if (auth == null) {
+                throw new Error("Authentication failed");
+            }
+
+            // Use user info from auth response
+            setUserName(auth.user.username);
+
+            // ギルド情報を取得
+            const guildsRes = await fetch(`https://discord.com/api/v10/users/@me/guilds`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const guildsJson = await guildsRes.json();
+            const currentGuild = guildsJson.find((guild: any) => guild.id === discordSdk.guildId);
+
+            if (currentGuild) {
+                setGuildIcon(`https://cdn.discordapp.com/icons/${currentGuild.id}/${currentGuild.icon}.webp?size=128`);
+            }
+        } catch (error) {
+            console.error(error);
+            setError("Failed to setup Discord SDK");
+        }
+    };
+
     return (
-        <div>
+        <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
             <h1>Discord Activity</h1>
             {!userName ? (
                 <div>
@@ -52,7 +84,10 @@ export default function Home() {
                 </div>
             ) : (
                 <div>
-                    <p>Welcome, {userName}!</p>
+                    <p style={{ fontSize: "20px" }}>
+                        Welcome, <strong>{userName}</strong>!
+                    </p>
+                    {guildIcon && <img src={guildIcon} alt="Guild Icon" />}
                 </div>
             )}
         </div>
