@@ -1,36 +1,73 @@
+// callback.ts
 import { NextApiRequest, NextApiResponse } from "next";
 import { DiscordSDK } from "@discord/embedded-app-sdk";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const code = req.query.code as string;
     const client_id = process.env.DISCORD_CLIENT_ID;
+    const client_secret = process.env.DISCORD_CLIENT_SECRET;
+    const redirect_uri = process.env.DISCORD_REDIRECT_URI;
 
-    if (!client_id) {
-        return res.status(500).json({ error: "Missing Discord client ID" });
+    if (!code) {
+        res.status(400).json({ error: "Missing authorization code" });
+        return;
     }
 
     try {
-        // DiscordSDKのインスタンスを生成
+        if (!client_id) {
+            throw new Error("DISCORD_CLIENT_ID is not defined");
+        }
         const discordSdk = new DiscordSDK(client_id);
 
-        // DiscordSDKの初期化
-        await discordSdk.ready();
-
-        // Discordの認証URLにリダイレクト
-        await discordSdk.commands.authorize({
-            client_id,
-            response_type: "code",
-            state: "",
-            prompt: "none",
-            scope: ["identify", "guilds"],
+        // Discord API にコードを送信してアクセストークンを取得
+        const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+            body: new URLSearchParams({
+                client_id: client_id || "",
+                client_secret: client_secret || "",
+                grant_type: "authorization_code",
+                code: code,
+                redirect_uri: redirect_uri || "",
+            }),
         });
 
-        // 認証後、Discordからのリダイレクトを受け取る
-        res.redirect(302, `https://share-mario-maker.vercel.app/api/callback`);
+        if (!tokenResponse.ok) {
+            throw new Error("Failed to fetch access token");
+        }
+
+        const tokenData = await tokenResponse.json();
+        const access_token = tokenData.access_token;
+
+        // Discord SDKの認証処理
+        const auth = await discordSdk.commands.authenticate({ access_token });
+
+        if (!auth) {
+            throw new Error("Failed to authenticate");
+        }
+
+        // 認証成功後にユーザー情報を取得
+        const userData = await fetch("https://discord.com/api/v10/users/@me", {
+            headers: {
+                Authorization: `Bearer ${access_token}`,
+                "Content-Type": "application/json",
+            },
+        });
+
+        const userJson = await userData.json();
+
+        // ユーザー情報をページに表示するためにクエリパラメータで渡す
+        const redirectUrl = `https://${req.headers.host}?username=${encodeURIComponent(userJson.username)}`;
+        res.redirect(302, redirectUrl);
     } catch (error: unknown) {
         if (error instanceof Error) {
+            console.error(error);
             res.status(500).json({ error: error.message });
         } else {
-            res.status(500).json({ error: "Failed to start Discord login" });
+            console.error("An unknown error occurred");
+            res.status(500).json({ error: "An unknown error occurred" });
         }
     }
 }
