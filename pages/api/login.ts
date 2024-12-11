@@ -1,10 +1,12 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { DISCORD_CLIENT_ID, DISCORD_REDIRECT_URI } = process.env;
-    const discordAuthURL = `https://discord.com/api/oauth2/authorize?client_id=${DISCORD_CLIENT_ID}&redirect_uri=${encodeURIComponent(
-        DISCORD_REDIRECT_URI!
+    const redirectUri = process.env.DISCORD_REDIRECT_URI; // 環境変数から取得
+    const clientId = process.env.DISCORD_CLIENT_ID;
+
+    const discordAuthUrl = `https://discord.com/api/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
+        redirectUri || ""
     )}&response_type=code&scope=identify`;
 
-    res.redirect(discordAuthURL);
+    res.redirect(discordAuthUrl);
 }
