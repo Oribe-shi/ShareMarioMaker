@@ -1,49 +1,39 @@
-// app/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
-import Image from "next/image";
-
-interface Participant {
-    username: string;
-    avatarURL: string;
-    activity: string | null;
-}
+import React, { useState, useEffect } from "react";
 
 export default function Home() {
-    const [participants, setParticipants] = useState<Participant[]>([]);
+    const [userName, setUserName] = useState<string | null>(null);
 
+    // 認証済みのユーザー情報を取得する関数
     useEffect(() => {
-        async function fetchParticipants() {
-            const response = await fetch("/api/discordActivity");
-            const data = await response.json();
-            setParticipants(data.participants);
-        }
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch("/api/callback"); // サーバーのエンドポイントを呼び出す
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserName(data.user.username); // ユーザー名を状態にセット
+                } else {
+                    console.error("Failed to fetch user data");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        };
 
-        fetchParticipants();
+        fetchUserData();
     }, []);
 
     return (
-        <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-            <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-                <div id="app">
-                    {participants.length > 0 ? (
-                        participants.map((participant, index) => (
-                            <div key={index}>
-                                <h2>{participant.username}</h2>
-                                <Image
-                                    src={participant.avatarURL}
-                                    alt={participant.username}
-                                    width={100} // 適切な幅を設定
-                                    height={100} // 適切な高さを設定
-                                />
-                            </div>
-                        ))
-                    ) : (
-                        <p>参加者がいません</p>
-                    )}
+        <div>
+            <h1>Discord Activity</h1>
+            {!userName ? (
+                <button onClick={() => (window.location.href = "/api/login")}>Login with Discord</button>
+            ) : (
+                <div>
+                    <p>Welcome, {userName}!</p>
                 </div>
-            </main>
+            )}
         </div>
     );
 }

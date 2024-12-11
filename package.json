@@ -9,6 +9,8 @@
         "lint": "next lint"
     },
     "dependencies": {
+        "@types/axios": "^0.14.4",
+        "axios": "^1.7.9",
         "discord.js": "^14.16.3",
         "next": "^15.0.4",
         "next-auth": "^4.24.11",
