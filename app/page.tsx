@@ -5,6 +5,11 @@ import React, { useState, useEffect } from "react";
 import { DiscordSDK } from "@discord/embedded-app-sdk";
 import Image from "next/image";
 
+interface Guild {
+    id: string;
+    icon: string | null; // icon can be null if the guild has no icon
+}
+
 export default function Home() {
     const [userName, setUserName] = useState<string | null>(null);
     const [guildIcon, setGuildIcon] = useState<string | null>(null);
@@ -46,7 +51,7 @@ export default function Home() {
                 },
             });
 
-            const guildsJson = (await guildsRes.json()) as Array<{ id: string; icon: string }>;
+            const guildsJson = (await guildsRes.json()) as Guild[];
             const currentGuild = guildsJson.find((guild: any) => guild.id === discordSdk.guildId);
 
             if (currentGuild) {
