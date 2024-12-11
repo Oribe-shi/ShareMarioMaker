@@ -10,6 +10,19 @@ export default function Home() {
 
     useEffect(() => {
         const initializeDiscordSdk = async () => {
+            // URLのクエリパラメータを取得
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // 'frame_id'がクエリに含まれているか確認
+            const frameIdFromUrl = urlParams.get("frame_id");
+            setFrameId(frameIdFromUrl);
+
+            if (!frameIdFromUrl) {
+                console.log("frame_id is not present in the URL.");
+            } else {
+                console.log("frame_id:", frameIdFromUrl);
+            }
+
             const discordSdk = new DiscordSDK(process.env.DISCORD_CLIENT_ID!);
 
             try {
