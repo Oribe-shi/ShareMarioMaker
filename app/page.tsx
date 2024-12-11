@@ -9,6 +9,7 @@ export default function Home() {
     useEffect(() => {
         const urlParams = new URLSearchParams(window.location.search);
         const username = urlParams.get("username");
+
         if (username) {
             setUserName(username);
         } else {

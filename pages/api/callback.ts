@@ -1,7 +1,8 @@
+// /pages/api/callback.ts
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const code = req.query.code as string; // Discordから返ってきたコード
+    const code = req.query.code as string;
     const redirectUri = process.env.DISCORD_REDIRECT_URI;
 
     if (!code) {
@@ -10,7 +11,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     try {
-        // Discord API に POST リクエストを送信してアクセストークンを取得
         const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -31,7 +31,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const tokenData = await tokenResponse.json();
         const accessToken = tokenData.access_token;
 
-        // アクセストークンを使用してユーザー情報を取得
         const userResponse = await fetch("https://discord.com/api/users/@me", {
             headers: { Authorization: `Bearer ${accessToken}` },
         });
@@ -43,12 +42,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const userData = await userResponse.json();
 
-        // リクエストヘッダーからホスト名を取得
-        const host = req.headers.host;
-
-        // ユーザー情報をトップページのURLにクエリパラメータとして追加
-        const redirectUrl = `https://${host}/?username=${encodeURIComponent(userData.username)}`;
-        res.redirect(302, redirectUrl); // リダイレクト
+        // リダイレクト先にユーザー名を渡す
+        const redirectUrl = `${process.env.FRONTEND_URL}/?username=${encodeURIComponent(userData.username)}`;
+        res.redirect(redirectUrl);
     } catch (error: unknown) {
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
