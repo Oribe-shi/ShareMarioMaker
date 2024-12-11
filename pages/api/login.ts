@@ -1,4 +1,4 @@
-// /pages/api/login.ts
+// pages/api/login.ts
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -13,5 +13,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
     const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
         redirectUri
     )}&response_type=code&scope=${scope}`;
+
+    // Discordの認証ページへリダイレクト
     res.redirect(discordAuthUrl);
 }
