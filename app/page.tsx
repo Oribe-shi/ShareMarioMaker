@@ -13,7 +13,8 @@ export default function Home() {
                 const response = await fetch("/api/callback"); // サーバーのエンドポイントを呼び出す
                 if (response.ok) {
                     const data = await response.json();
-                    setUserName(data.username); // 直接 username を参照
+                    // ユーザー名をdata.usernameからセット
+                    setUserName(data.username);
                 } else {
                     setError("Failed to fetch user data. Please try again.");
                 }
