@@ -1,10 +1,17 @@
 // app/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+
+interface Participant {
+    username: string;
+    avatarURL: string;
+    activity: string | null;
+}
 
 export default function Home() {
-    const [participants, setParticipants] = useState<any[]>([]);
+    const [participants, setParticipants] = useState<Participant[]>([]);
 
     useEffect(() => {
         async function fetchParticipants() {
@@ -24,7 +31,12 @@ export default function Home() {
                         participants.map((participant, index) => (
                             <div key={index}>
                                 <h2>{participant.username}</h2>
-                                <img src={participant.avatarURL} alt={participant.username} />
+                                <Image
+                                    src={participant.avatarURL}
+                                    alt={participant.username}
+                                    width={100} // 適切な幅を設定
+                                    height={100} // 適切な高さを設定
+                                />
                             </div>
                         ))
                     ) : (
