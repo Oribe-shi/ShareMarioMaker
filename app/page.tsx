@@ -10,6 +10,12 @@ interface Guild {
     icon: string | null; // icon can be null if the guild has no icon
 }
 
+// Define the expected structure of the guilds response
+interface GuildResponse {
+    id: string;
+    icon: string | null;
+}
+
 interface Auth {
     user: {
         username: string;
@@ -57,7 +63,7 @@ export default function Home() {
                 },
             });
 
-            const guildsJson = (await guildsRes.json()) as Guild[];
+            const guildsJson = (await guildsRes.json()) as GuildResponse[];
             const currentGuild = guildsJson.find((guild: any) => guild.id === discordSdk.guildId);
 
             if (currentGuild) {
