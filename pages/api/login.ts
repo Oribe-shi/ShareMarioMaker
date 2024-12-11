@@ -26,7 +26,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // 認証後、Discordからのリダイレクトを受け取る
         res.redirect(302, `https://share-mario-maker.vercel.app/api/callback`);
-    } catch (error) {
-        res.status(500).json({ error: "Failed to start Discord login" });
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            res.status(500).json({ error: error.message });
+        } else {
+            res.status(500).json({ error: "Failed to start Discord login" });
+        }
     }
 }
