@@ -3,11 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const accessToken = process.env.DISCORD_ACCESS_TOKEN; // アクセストークンを環境変数で管理
 
-    const response = await fetch("https://discord.com/api/v10/users/@me", {
-        headers: {
-            Authorization: `Bearer ${accessToken}`,
-        },
-    });
+    const response = await fetch("/api/user"); // 修正: 正しいエンドポイントを指定
 
     if (!response.ok) {
         res.status(response.status).json({ error: "Failed to fetch user data" });
