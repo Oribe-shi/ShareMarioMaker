@@ -6,7 +6,6 @@ import { DiscordSDK } from "@discord/embedded-app-sdk";
 
 export default function Home() {
     const [userName, setUserName] = useState<string | null>(null);
-    const [guildIcon, setGuildIcon] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -36,21 +35,6 @@ export default function Home() {
 
             // Use user info from auth response
             setUserName(auth.user.username);
-
-            // ギルド情報を取得
-            const guildsRes = await fetch(`https://discord.com/api/v10/users/@me/guilds`, {
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            const guildsJson = (await guildsRes.json()) as Array<{ id: string; icon: string }>;
-            const currentGuild = guildsJson.find((guild: any) => guild.id === discordSdk.guildId);
-
-            if (currentGuild) {
-                setGuildIcon(`https://cdn.discordapp.com/icons/${currentGuild.id}/${currentGuild.icon}.webp?size=128`);
-            }
         } catch (error) {
             console.error(error);
             setError("Failed to setup Discord SDK");
