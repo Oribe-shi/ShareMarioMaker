@@ -10,6 +10,12 @@ interface Guild {
     icon: string | null; // icon can be null if the guild has no icon
 }
 
+interface Auth {
+    user: {
+        username: string;
+    };
+}
+
 export default function Home() {
     const [userName, setUserName] = useState<string | null>(null);
     const [guildIcon, setGuildIcon] = useState<string | null>(null);
@@ -34,7 +40,7 @@ export default function Home() {
 
         try {
             await discordSdk.ready();
-            const auth = await discordSdk.commands.authenticate({ access_token: accessToken });
+            const auth = (await discordSdk.commands.authenticate({ access_token: accessToken })) as Auth;
 
             if (auth == null) {
                 throw new Error("Authentication failed");
