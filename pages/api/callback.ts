@@ -43,12 +43,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const userData = await userResponse.json();
 
-        // JSONレスポンスを返す
-        res.status(200).json(userData);
-
-        // その後リダイレクトも実施
-        const redirectUrl = `/dashboard?username=${encodeURIComponent(userData.username)}`;
-        res.redirect(302, redirectUrl);
+        // ユーザー情報をトップページのURLにクエリパラメータとして追加
+        const redirectUrl = `https://example.vercel.app/?username=${encodeURIComponent(userData.username)}`;
+        res.redirect(302, redirectUrl); // リダイレクト
     } catch (error: unknown) {
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });

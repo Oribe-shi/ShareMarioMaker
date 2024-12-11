@@ -5,38 +5,16 @@ import React, { useState, useEffect } from "react";
 export default function Home() {
     const [userName, setUserName] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(true); // ローディング状態を追加
 
-    // 認証済みのユーザー情報を取得する関数
     useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await fetch("/api/callback"); // サーバーのエンドポイントを呼び出す
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserName(data.username); // ユーザー名をdata.usernameからセット
-                } else {
-                    setError("Failed to fetch user data. Please try again.");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-                setError("An unexpected error occurred. Please try again later.");
-            } finally {
-                setLoading(false); // ローディング完了
-            }
-        };
-
-        fetchUserData();
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get("username");
+        if (username) {
+            setUserName(username);
+        } else {
+            setError("Failed to retrieve user data.");
+        }
     }, []);
-
-    if (loading) {
-        return (
-            <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
-                <h1>Discord Activity</h1>
-                <p>Loading...</p>
-            </div>
-        );
-    }
 
     return (
         <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
