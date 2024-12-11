@@ -43,8 +43,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         const userData = await userResponse.json();
 
+        // リクエストヘッダーからホスト名を取得
+        const host = req.headers.host;
+
         // ユーザー情報をトップページのURLにクエリパラメータとして追加
-        const redirectUrl = `https://example.vercel.app/?username=${encodeURIComponent(userData.username)}`;
+        const redirectUrl = `https://${host}/?username=${encodeURIComponent(userData.username)}`;
         res.redirect(302, redirectUrl); // リダイレクト
     } catch (error: unknown) {
         if (error instanceof Error) {
