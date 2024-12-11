@@ -2,7 +2,7 @@ module.exports = {
     async headers() {
         return [
             {
-                source: "/(.*)",
+                source: "/(.*)", // すべてのパスに適用
                 headers: [
                     {
                         key: "Content-Security-Policy",
