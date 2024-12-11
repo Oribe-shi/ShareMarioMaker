@@ -1,48 +1,37 @@
 // app/page.tsx
 "use client";
 
-// app/page.tsx
-
 import { useEffect, useState } from "react";
 
 export default function Home() {
-    const [userInfo, setUserInfo] = useState<{ username: string; avatar: string } | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    const [participants, setParticipants] = useState<any[]>([]);
 
     useEffect(() => {
-        async function fetchUserInfo() {
-            try {
-                const response = await fetch("/api/discord");
-
-                // レスポンスが正常でない場合、エラーを設定
-                if (!response.ok) {
-                    throw new Error("Failed to fetch user info");
-                }
-
-                const data = await response.json();
-                if (data.username && data.avatar) {
-                    setUserInfo(data);
-                }
-            } catch (error) {
-                setError(error instanceof Error ? error.message : "An unknown error occurred");
-            }
+        async function fetchParticipants() {
+            const response = await fetch("/api/discordActivity");
+            const data = await response.json();
+            setParticipants(data.participants);
         }
 
-        fetchUserInfo();
+        fetchParticipants();
     }, []);
 
     return (
-        <div>
-            <h1>Discord Activity</h1>
-            {error && <p>Error: {error}</p>}
-            {userInfo ? (
-                <div>
-                    <p>Username: {userInfo.username}</p>
-                    <img src={userInfo.avatar} alt="User Avatar" />
+        <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+            <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
+                <div id="app">
+                    {participants.length > 0 ? (
+                        participants.map((participant, index) => (
+                            <div key={index}>
+                                <h2>{participant.username}</h2>
+                                <img src={participant.avatarURL} alt={participant.username} />
+                            </div>
+                        ))
+                    ) : (
+                        <p>参加者がいません</p>
+                    )}
                 </div>
-            ) : (
-                <p>Loading user info...</p>
-            )}
+            </main>
         </div>
     );
 }
