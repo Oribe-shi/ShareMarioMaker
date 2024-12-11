@@ -1,4 +1,3 @@
-// app/index.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -7,9 +6,23 @@ import { DiscordSDK } from "@discord/embedded-app-sdk";
 export default function Home() {
     const [userName, setUserName] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [frameId, setFrameId] = useState<string | null>(null);
 
     useEffect(() => {
         const initializeDiscordSdk = async () => {
+            // URLのクエリパラメータを取得
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // 'frame_id'がクエリに含まれているか確認
+            const frameIdFromUrl = urlParams.get("frame_id");
+            setFrameId(frameIdFromUrl);
+
+            if (!frameIdFromUrl) {
+                console.log("frame_id is not present in the URL.");
+            } else {
+                console.log("frame_id:", frameIdFromUrl);
+            }
+
             const discordSdk = new DiscordSDK(process.env.DISCORD_CLIENT_ID!);
 
             try {
@@ -17,9 +30,8 @@ export default function Home() {
                 await discordSdk.ready();
 
                 // 認証情報の取得
-                // 認証情報の取得
                 const auth = await discordSdk.commands.authenticate({
-                    access_token: new URLSearchParams(window.location.search).get("access_token") || "",
+                    access_token: urlParams.get("access_token") || "",
                 });
 
                 if (auth === null) {
@@ -42,6 +54,9 @@ export default function Home() {
     return (
         <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
             <h1>Discord Activity</h1>
+            {/* frame_idを表示 */}
+            <p>{frameId ? `Frame ID: ${frameId}` : "No frame_id found in the URL."}</p>
+
             {!userName ? (
                 <div>
                     {error ? (
