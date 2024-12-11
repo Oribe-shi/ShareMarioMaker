@@ -39,8 +39,12 @@ export default function Home() {
                 }
 
                 setUserName(auth.user.username);
-            } catch (error) {
-                setError("Failed to initialize Discord SDK.");
+            } catch (error: unknown) {
+                if (error instanceof Error) {
+                    setError(error.message);
+                } else {
+                    setError("Failed to initialize Discord SDK.");
+                }
             }
         };
 
