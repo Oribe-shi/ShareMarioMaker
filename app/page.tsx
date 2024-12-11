@@ -7,17 +7,26 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const username = urlParams.get("username");
-        if (username) {
-            setUserName(username);
-        } else {
-            setError("Failed to retrieve user data.");
-        }
+        const fetchUserData = async () => {
+            try {
+                const response = await fetch("/api/callback"); // サーバーのエンドポイントを呼び出す
+                if (response.ok) {
+                    const data = await response.json();
+                    setUserName(data.username); // 取得したユーザー名をセット
+                } else {
+                    setError("Failed to fetch user data. Please try again.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                setError("An unexpected error occurred. Please try again later.");
+            }
+        };
+
+        fetchUserData();
     }, []);
 
     return (
-        <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
+        <div>
             <h1>Discord Activity</h1>
             {!userName ? (
                 <div>
@@ -43,9 +52,7 @@ export default function Home() {
                 </div>
             ) : (
                 <div>
-                    <p style={{ fontSize: "20px" }}>
-                        Welcome, <strong>{userName}</strong>!
-                    </p>
+                    <p>Welcome, {userName}!</p>
                 </div>
             )}
         </div>
