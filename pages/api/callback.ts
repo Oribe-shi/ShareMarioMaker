@@ -42,7 +42,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         }
 
         const userData = await userResponse.json();
-        res.status(200).json(userData);
+
+        // フロントエンド用のデータとしてユーザー名を返す
+        res.status(200).json({ user: { username: userData.username } });
     } catch (error: unknown) {
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });
