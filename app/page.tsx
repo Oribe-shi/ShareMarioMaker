@@ -23,7 +23,7 @@ export default function Home() {
                 console.log("frame_id:", frameIdFromUrl);
             }
 
-            const discordSdk = new DiscordSDK(process.env.DISCORD_CLIENT_ID!);
+            const discordSdk = new DiscordSDK(process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!);
 
             try {
                 // SDKの初期化
@@ -31,7 +31,7 @@ export default function Home() {
 
                 // 認証コードの取得
                 const { code } = await discordSdk.commands.authorize({
-                    client_id: process.env.DISCORD_CLIENT_ID!,
+                    client_id: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!,
                     response_type: "code",
                     state: "",
                     prompt: "none",

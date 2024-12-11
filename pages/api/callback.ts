@@ -3,7 +3,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const { code } = req.query;
-    const { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } = process.env;
+    const { NEXT_PUBLIC_DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } = process.env;
 
     if (!code) {
         return res.status(400).json({ error: "No code provided" });
@@ -17,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 "Content-Type": "application/x-www-form-urlencoded",
             },
             body: new URLSearchParams({
-                client_id: DISCORD_CLIENT_ID!,
+                client_id: NEXT_PUBLIC_DISCORD_CLIENT_ID!,
                 client_secret: DISCORD_CLIENT_SECRET!,
                 code: code as string,
                 grant_type: "authorization_code",
