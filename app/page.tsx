@@ -1,35 +1,32 @@
 // app/page.tsx
-"use client";
 
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-const DiscordActivity = () => {
-    const [userNames, setUserNames] = useState<string[]>([]);
-    const [userIcons, setUserIcons] = useState<string[]>([]);
+export default function Home() {
+    const [userInfo, setUserInfo] = useState<{ username: string; avatar: string } | null>(null);
 
     useEffect(() => {
-        const fetchActivityData = async () => {
-            const response = await fetch("/api/discordActivity");
+        async function fetchUserInfo() {
+            const response = await fetch("/api/discord");
             const data = await response.json();
-            setUserNames(data.userNames);
-            setUserIcons(data.userIcons);
-        };
-        fetchActivityData();
+            if (data.username && data.avatar) {
+                setUserInfo(data);
+            }
+        }
+        fetchUserInfo();
     }, []);
 
     return (
         <div>
-            <h2>Discord Activity - Online Users</h2>
-            <ul>
-                {userNames.map((name, index) => (
-                    <li key={index}>
-                        <img src={userIcons[index]} alt={name} width={40} height={40} />
-                        {name}
-                    </li>
-                ))}
-            </ul>
+            <h1>Discord Activity</h1>
+            {userInfo ? (
+                <div>
+                    <p>Username: {userInfo.username}</p>
+                    <img src={userInfo.avatar} alt="User Avatar" />
+                </div>
+            ) : (
+                <p>Loading user info...</p>
+            )}
         </div>
     );
-};
-
-export default DiscordActivity;
+}
