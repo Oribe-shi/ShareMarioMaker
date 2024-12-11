@@ -1,4 +1,5 @@
-// app/api/getDiscordUsername/route.ts
+"use server"; // サーバーサイド専用コードにする
+
 import { NextResponse } from "next/server";
 import { Client, GatewayIntentBits } from "discord.js";
 
