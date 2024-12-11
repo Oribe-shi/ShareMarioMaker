@@ -1,54 +1,66 @@
-// pages/api/callback.ts
 import { NextApiRequest, NextApiResponse } from "next";
+import { DiscordSDK } from "@discord/embedded-app-sdk";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { code } = req.query; // Discordから返ってきた認証コード
-    const clientId = process.env.DISCORD_CLIENT_ID;
-    const clientSecret = process.env.DISCORD_CLIENT_SECRET;
+    const code = req.query.code as string; // Discordから返ってきた認証コード
+    const client_id = process.env.DISCORD_CLIENT_ID;
+    const client_secret = process.env.DISCORD_CLIENT_SECRET;
     const redirectUri = process.env.DISCORD_REDIRECT_URI;
 
-    if (!code) {
-        return res.status(400).json({ error: "Code is missing" });
+    if (!code || !client_id || !client_secret || !redirectUri) {
+        return res.status(400).json({ error: "Missing required parameters" });
     }
 
     try {
-        // Discord APIにPOSTリクエストを送信してアクセストークンを取得
-        const tokenResponse = await fetch("https://discord.com/api/v10/oauth2/token", {
+        // Discordのトークンを取得
+        const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: new URLSearchParams({
-                client_id: clientId || "",
-                client_secret: clientSecret || "",
+                client_id: client_id,
+                client_secret: client_secret,
                 grant_type: "authorization_code",
-                code: code as string,
-                redirect_uri: redirectUri || "",
+                code: code,
+                redirect_uri: redirectUri,
             }),
         });
 
-        const tokenData = await tokenResponse.json();
-
-        if (tokenData.error) {
-            return res.status(400).json({ error: tokenData.error });
+        if (!tokenResponse.ok) {
+            throw new Error("Failed to fetch access token");
         }
 
+        const tokenData = await tokenResponse.json();
         const accessToken = tokenData.access_token;
 
-        // Discord APIを使ってユーザー情報を取得
-        const userResponse = await fetch("https://discord.com/api/v10/users/@me", {
-            headers: { Authorization: `Bearer ${accessToken}` },
+        // DiscordSDKのインスタンスを生成
+        const discordSdk = new DiscordSDK(client_id);
+        await discordSdk.ready();
+
+        // トークンを使って認証
+        const auth = await discordSdk.commands.authenticate({
+            access_token: accessToken,
         });
+
+        if (!auth) {
+            throw new Error("Authentication failed");
+        }
+
+        // ユーザー情報を取得
+        const userResponse = await fetch("https://discord.com/api/v10/users/@me", {
+            headers: {
+                Authorization: `Bearer ${accessToken}`,
+            },
+        });
+
+        if (!userResponse.ok) {
+            throw new Error("Failed to fetch user data");
+        }
 
         const userData = await userResponse.json();
 
-        if (!userResponse.ok) {
-            throw new Error(`Failed to fetch user data: ${JSON.stringify(userData)}`);
-        }
-
-        // ユーザー情報（ユーザー名など）をトップページにクエリパラメータとして付けてリダイレクト
-        const host = req.headers.host;
-        const redirectUrl = `https://${host}/?username=${encodeURIComponent(userData.username)}`;
-
-        res.redirect(302, redirectUrl); // ユーザー情報とともにトップページにリダイレクト
+        // ユーザー名を取得してトップページにリダイレクト
+        const redirectUrl = `https://share-mario-maker.vercel.app/?username=${encodeURIComponent(userData.username)}`;
+        res.redirect(302, redirectUrl);
     } catch (error: unknown) {
         if (error instanceof Error) {
             res.status(500).json({ error: error.message });

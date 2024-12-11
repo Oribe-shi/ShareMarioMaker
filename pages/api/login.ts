@@ -1,19 +1,32 @@
-// pages/api/login.ts
 import { NextApiRequest, NextApiResponse } from "next";
+import { DiscordSDK } from "@discord/embedded-app-sdk";
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-    const redirectUri = process.env.DISCORD_REDIRECT_URI;
-    const clientId = process.env.DISCORD_CLIENT_ID;
+export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const client_id = process.env.DISCORD_CLIENT_ID;
 
-    if (!redirectUri || !clientId) {
-        return res.status(500).json({ error: "Missing environment variables" });
+    if (!client_id) {
+        return res.status(500).json({ error: "Missing Discord client ID" });
     }
 
-    const scope = "identify";
-    const discordAuthUrl = `https://discord.com/oauth2/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(
-        redirectUri
-    )}&response_type=code&scope=${scope}`;
+    try {
+        // DiscordSDKのインスタンスを生成
+        const discordSdk = new DiscordSDK(client_id);
 
-    // Discordの認証ページへリダイレクト
-    res.redirect(discordAuthUrl);
+        // DiscordSDKの初期化
+        await discordSdk.ready();
+
+        // Discordの認証URLにリダイレクト
+        await discordSdk.commands.authorize({
+            client_id,
+            response_type: "code",
+            state: "",
+            prompt: "none",
+            scope: ["identify", "guilds"],
+        });
+
+        // 認証後、Discordからのリダイレクトを受け取る
+        res.redirect(302, `https://share-mario-maker.vercel.app/api/callback`);
+    } catch (error) {
+        res.status(500).json({ error: "Failed to start Discord login" });
+    }
 }
