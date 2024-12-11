@@ -49,7 +49,7 @@ export default function Home() {
                 // ユーザー情報の取得
                 const user = await fetch("https://discord.com/api/v10/users/@me", {
                     headers: {
-                        Authorization: `Bearer ${auth.access_token}`,
+                        Authorization: `Bearer ${accessToken}`,
                         "Content-Type": "application/json",
                     },
                 }).then((response) => response.json());
