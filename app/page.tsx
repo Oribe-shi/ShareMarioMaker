@@ -7,7 +7,6 @@ export default function Home() {
     const [userName, setUserName] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [frameId, setFrameId] = useState<string | null>(null);
-    const [accessToken, setAccessToken] = useState<string | null>(null);
 
     useEffect(() => {
         const initializeDiscordSdk = async () => {
@@ -15,36 +14,41 @@ export default function Home() {
             const frameIdFromUrl = urlParams.get("frame_id");
             setFrameId(frameIdFromUrl);
 
-            const tokenFromUrl = urlParams.get("access_token");
-            setAccessToken(tokenFromUrl);
+            console.log("Frame ID:", frameIdFromUrl);
 
-            // frame_idとaccess_tokenが無ければエラーメッセージを設定
-            if (!frameIdFromUrl || !tokenFromUrl) {
-                setError("Frame ID or Access Token is missing.");
+            // アクセストークンを取得
+            const accessToken = urlParams.get("access_token");
+            if (!accessToken) {
+                setError("No access token found.");
                 return;
             }
 
-            // DiscordSDKの初期化
+            console.log("Access Token:", accessToken);
+
             const discordSdk = new DiscordSDK(process.env.DISCORD_CLIENT_ID!);
 
             try {
+                // DiscordSDKの初期化を待機
                 await discordSdk.ready();
+                console.log("Discord SDK is ready");
+
+                // 認証情報の取得
                 const auth = await discordSdk.commands.authenticate({
-                    access_token: tokenFromUrl,
+                    access_token: accessToken,
                 });
+
+                console.log("Auth response:", auth);
 
                 if (auth === null) {
                     setError("Authentication failed.");
                     return;
                 }
 
+                // ユーザー情報の取得
                 setUserName(auth.user.username);
-            } catch (error: unknown) {
-                if (error instanceof Error) {
-                    setError(error.message);
-                } else {
-                    setError("Failed to initialize Discord SDK.");
-                }
+            } catch (error) {
+                console.error("Error initializing Discord SDK", error);
+                setError("Failed to initialize Discord SDK.");
             }
         };
 
@@ -55,14 +59,8 @@ export default function Home() {
     return (
         <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
             <h1>Discord Activity</h1>
+            <p>{frameId ? `Frame ID: ${frameId}` : "No frame_id found in the URL."}</p>
 
-            {/* frame_idの表示 */}
-            <p>{frameId ? `Frame ID: ${frameId}` : "No Frame ID found in the URL."}</p>
-
-            {/* access_tokenの表示 */}
-            <p>{accessToken ? `Access Token: ${accessToken}` : "No Access Token found in the URL."}</p>
-
-            {/* エラーメッセージまたはユーザー名 */}
             {!userName ? (
                 <div>
                     {error ? (
