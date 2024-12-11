@@ -1,4 +1,3 @@
-// page.tsx
 import ClientComponent from "./client";
 
 export default function Page() {
