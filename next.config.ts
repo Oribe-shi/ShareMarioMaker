@@ -1,21 +1,15 @@
-// next.config.ts
-
-import { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+module.exports = {
     async headers() {
         return [
             {
-                source: "/(.*)", // 全てのリクエストに対して
+                source: "/(.*)", // 全てのページに適用
                 headers: [
                     {
                         key: "Content-Security-Policy",
-                        value: "", // 空のCSPヘッダーで無効化
+                        value: "connect-src 'self' https://discord.com/api/ https://canary.discord.com/api/ https://ptb.discord.com/api/ https://cdn.discordapp.com/ https://discordsays.com/;",
                     },
                 ],
             },
         ];
     },
 };
-
-export default nextConfig;
