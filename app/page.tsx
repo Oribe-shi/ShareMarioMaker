@@ -9,37 +9,35 @@ export default function Home() {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const accessToken = urlParams.get("access_token");
+        const initializeDiscordSdk = async () => {
+            const discordSdk = new DiscordSDK(process.env.DISCORD_CLIENT_ID!);
 
-        if (accessToken) {
-            setupDiscordSdk(accessToken);
-        } else {
-            setError("Failed to retrieve user data.");
-        }
-    }, []);
+            try {
+                // DiscordSDKの初期化を待機
+                await discordSdk.ready();
 
-    const setupDiscordSdk = async (accessToken: string) => {
-        const client_id = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID;
-        if (!client_id) throw new Error("Discord client ID not configured");
+                // 認証情報の取得
+                // 認証情報の取得
+                const auth = await discordSdk.commands.authenticate({
+                    access_token: new URLSearchParams(window.location.search).get("access_token") || "",
+                });
 
-        const discordSdk = new DiscordSDK(client_id);
+                if (auth === null) {
+                    setError("Authentication failed.");
+                    return;
+                }
 
-        try {
-            await discordSdk.ready();
-            const auth = await discordSdk.commands.authenticate({ access_token: accessToken });
-
-            if (auth == null) {
-                throw new Error("Authentication failed");
+                // ユーザー情報の取得
+                setUserName(auth.user.username);
+            } catch (error) {
+                console.error("Error initializing Discord SDK", error);
+                setError("Failed to initialize Discord SDK.");
             }
+        };
 
-            // Use user info from auth response
-            setUserName(auth.user.username);
-        } catch (error) {
-            console.error(error);
-            setError("Failed to setup Discord SDK");
-        }
-    };
+        // DiscordSDKの初期化
+        initializeDiscordSdk();
+    }, []);
 
     return (
         <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
