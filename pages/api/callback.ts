@@ -1,39 +1,49 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import axios from "axios";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { code } = req.query;
+    const code = req.query.code as string; // Discordから返ってきたコード
+    const redirectUri = process.env.DISCORD_REDIRECT_URI;
 
     if (!code) {
-        return res.status(400).json({ error: "Authorization code is missing" });
+        res.status(400).json({ error: "Missing authorization code" });
+        return;
     }
 
-    const { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI, DISCORD_API_BASE_URL } = process.env;
-
     try {
-        // アクセストークンの取得
-        const tokenResponse = await axios.post(`${DISCORD_API_BASE_URL}/oauth2/token`, null, {
-            params: {
-                client_id: DISCORD_CLIENT_ID,
-                client_secret: DISCORD_CLIENT_SECRET,
-                grant_type: "authorization_code",
-                code,
-                redirect_uri: DISCORD_REDIRECT_URI,
-            },
+        // Discord API に POST リクエストを送信してアクセストークンを取得
+        const tokenResponse = await fetch("https://discord.com/api/oauth2/token", {
+            method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: new URLSearchParams({
+                client_id: process.env.DISCORD_CLIENT_ID || "",
+                client_secret: process.env.DISCORD_CLIENT_SECRET || "",
+                grant_type: "authorization_code",
+                code: code,
+                redirect_uri: redirectUri || "",
+            }),
         });
 
-        const { access_token } = tokenResponse.data;
+        if (!tokenResponse.ok) {
+            const error = await tokenResponse.json();
+            throw new Error(`Failed to fetch access token: ${JSON.stringify(error)}`);
+        }
 
-        // ユーザー情報の取得
-        const userResponse = await axios.get(`${DISCORD_API_BASE_URL}/users/@me`, {
-            headers: { Authorization: `Bearer ${access_token}` },
+        const tokenData = await tokenResponse.json();
+        const accessToken = tokenData.access_token;
+
+        // アクセストークンを使用してユーザー情報を取得
+        const userResponse = await fetch("https://discord.com/api/users/@me", {
+            headers: { Authorization: `Bearer ${accessToken}` },
         });
 
-        const user = userResponse.data;
-        res.status(200).json({ user });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: "Failed to fetch user data" });
+        if (!userResponse.ok) {
+            const error = await userResponse.json();
+            throw new Error(`Failed to fetch user data: ${JSON.stringify(error)}`);
+        }
+
+        const userData = await userResponse.json();
+        res.status(200).json(userData);
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
     }
 }
