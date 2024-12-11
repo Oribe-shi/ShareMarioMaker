@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from "react";
 import { DiscordSDK } from "@discord/embedded-app-sdk";
+import Image from "next/image";
 
 export default function Home() {
     const [userName, setUserName] = useState<string | null>(null);
@@ -45,7 +46,7 @@ export default function Home() {
                 },
             });
 
-            const guildsJson = await guildsRes.json();
+            const guildsJson = (await guildsRes.json()) as Array<{ id: string; icon: string }>;
             const currentGuild = guildsJson.find((guild: any) => guild.id === discordSdk.guildId);
 
             if (currentGuild) {
@@ -87,7 +88,7 @@ export default function Home() {
                     <p style={{ fontSize: "20px" }}>
                         Welcome, <strong>{userName}</strong>!
                     </p>
-                    {guildIcon && <img src={guildIcon} alt="Guild Icon" />}
+                    {guildIcon && <Image src={guildIcon} alt="Guild Icon" width={128} height={128} />}
                 </div>
             )}
         </div>
