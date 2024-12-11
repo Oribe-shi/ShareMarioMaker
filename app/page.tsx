@@ -1,34 +1,34 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
+import { useSearchParams } from "next/navigation";
 
 export default function Home() {
-    const [userName, setUserName] = useState<string | null>(null);
+    const searchParams = useSearchParams();
+    const usernameParam = searchParams.get("username");
+    const errorParam = searchParams.get("error");
 
-    // 認証済みのユーザー情報を取得する関数
-    useEffect(() => {
-        const fetchUserData = async () => {
-            try {
-                const response = await fetch("/api/callback"); // サーバーのエンドポイントを呼び出す
-                if (response.ok) {
-                    const data = await response.json();
-                    setUserName(data.user.username); // ユーザー名を状態にセット
-                } else {
-                    console.error("Failed to fetch user data");
-                }
-            } catch (error) {
-                console.error("Error:", error);
-            }
-        };
-
-        fetchUserData();
-    }, []);
+    const [userName, setUserName] = useState<string | null>(usernameParam);
+    const [error, setError] = useState<string | null>(errorParam);
 
     return (
         <div>
             <h1>Discord Activity</h1>
             {!userName ? (
-                <button onClick={() => (window.location.href = "/api/login")}>Login with Discord</button>
+                <div>
+                    <button
+                        onClick={() =>
+                            (window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${
+                                process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID
+                            }&redirect_uri=${encodeURIComponent(
+                                `${process.env.NEXT_PUBLIC_BASE_URL}/api/callback`
+                            )}&response_type=code&scope=identify`)
+                        }
+                    >
+                        Login with Discord
+                    </button>
+                    {error && <p style={{ color: "red" }}>Error: {error}</p>}
+                </div>
             ) : (
                 <div>
                     <p>Welcome, {userName}!</p>
