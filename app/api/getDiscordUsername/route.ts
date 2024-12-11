@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 
 export async function GET(request: Request) {
     const url = new URL(request.url);
-    const userId = url.searchParams.get("userId"); // URLパラメータでユーザーIDを取得
+    const userId = url.searchParams.get("userId");
 
     if (!userId) {
+        console.error("ユーザーIDが提供されていません");
         return NextResponse.json({ error: "ユーザーIDが提供されていません" }, { status: 400 });
     }
 
     try {
-        // ユーザーのアクティビティ情報を取得する
         const res = await fetch(`https://discord.com/api/v10/users/${userId}/activities`, {
             headers: {
                 Authorization: `Bot ${process.env.DISCORD_BOT_TOKEN}`,
@@ -17,11 +17,13 @@ export async function GET(request: Request) {
         });
 
         if (!res.ok) {
+            console.error("Discord APIからアクティビティ情報を取得できませんでした");
             throw new Error("Discord APIからアクティビティ情報を取得できませんでした");
         }
 
         const data = await res.json();
         if (data.length === 0) {
+            console.error("アクティビティに参加しているユーザーがいません");
             return NextResponse.json({ error: "アクティビティに参加しているユーザーがいません" }, { status: 404 });
         }
 
