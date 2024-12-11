@@ -1,12 +1,34 @@
+// pages/index.tsx
 import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { getSession } from "next-auth/react";
+import { GetServerSideProps } from "next";
 
-export default function Home() {
-    const { data: session } = useSession();
+interface HomeProps {
+    userName: string | null;
+}
+
+export const getServerSideProps: GetServerSideProps<HomeProps> = async (context) => {
+    const session = await getSession(context);
+
+    if (!session || !session.user?.name) {
+        return {
+            redirect: {
+                destination: "/api/auth/signin", // サインインページにリダイレクト
+                permanent: false,
+            },
+        };
+    }
+
+    return {
+        props: { userName: session.user.name },
+    };
+};
+
+export default function Home({ userName }: HomeProps) {
     const [activity, setActivity] = useState("");
 
     const handleActivityChange = async () => {
-        if (!session) return;
+        if (!userName) return;
 
         const res = await fetch("/api/discordActivity", {
             method: "POST",
@@ -26,7 +48,7 @@ export default function Home() {
     return (
         <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
             <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-                <h1>ようこそ、{session?.user?.name}さん！</h1>
+                <h1>ようこそ、{userName}さん！</h1>
                 <div>
                     <input
                         type="text"
