@@ -1,27 +1,35 @@
-"use client"; // クライアントコンポーネントとしてマーク
+// app/page.tsx
+"use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-export default function Home() {
-    const [username, setUsername] = useState<string | null>(null);
+const DiscordActivity = () => {
+    const [userNames, setUserNames] = useState<string[]>([]);
+    const [userIcons, setUserIcons] = useState<string[]>([]);
 
     useEffect(() => {
-        // Discordアクティビティ開始したユーザー名を取得するAPIを呼び出す
-        async function fetchUsername() {
-            const response = await fetch("/api/getDiscordUsername");
-            if (response.ok) {
-                const data = await response.json();
-                setUsername(data.username);
-            }
-        }
-        fetchUsername();
+        const fetchActivityData = async () => {
+            const response = await fetch("/api/discordActivity");
+            const data = await response.json();
+            setUserNames(data.userNames);
+            setUserIcons(data.userIcons);
+        };
+        fetchActivityData();
     }, []);
 
     return (
-        <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-            <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-                {username ? <h1>アクティビティを開始したユーザー: {username}</h1> : <h1>ユーザー名を取得中...</h1>}
-            </main>
+        <div>
+            <h2>Discord Activity - Online Users</h2>
+            <ul>
+                {userNames.map((name, index) => (
+                    <li key={index}>
+                        <img src={userIcons[index]} alt={name} width={40} height={40} />
+                        {name}
+                    </li>
+                ))}
+            </ul>
         </div>
     );
-}
+};
+
+export default DiscordActivity;
