@@ -8,8 +8,7 @@ const nextConfig: NextConfig = {
             throw new Error("NEXT_PUBLIC_DISCORD_CLIENT_ID is not defined in environment variables.");
         }
 
-        const discordApiUrl = `https://${discordClientId}.discordsays.com/api/token`;
-        const discordProxyUrl = `https://${discordClientId}.discordsays.com/.proxy/`;
+        const discordApiUrl = `https://${discordClientId}.discordsays.com/.proxy/api/token`;
 
         return [
             {
@@ -18,19 +17,17 @@ const nextConfig: NextConfig = {
                     {
                         key: "Content-Security-Policy",
                         value: `
-                            default-src 'self'; 
-                            connect-src 
+                                default-src 'self'; 
+                                connect-src 
                                 'self' 
                                 https://share-mario-maker.vercel.app 
-                                https://discord.com/api/ 
-                                https://1309879469544050759.discordsays.com
-                                https://discord.com/api/ https://canary.discord.com/api/
-                                https://ptb.discord.com/api/
-                                ${discordApiUrl} 
-                                ${discordProxyUrl} 
+                                https://discord.com/.proxy/api/token
+                                ${discordApiUrl}
                                 wss://${discordClientId}.discordsays.com/.proxy/ 
-                                data: blob:;
-                        `
+                                data: blob:; 
+                                script-src 'self' 'unsafe-inline' 'unsafe-eval'; 
+                                style-src 'self' 'unsafe-inline';
+                            `
                             .replace(/\s+/g, " ")
                             .trim(),
                     },
