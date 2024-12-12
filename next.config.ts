@@ -2,14 +2,21 @@ import { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
     async headers() {
+        const discordClientId = process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID;
+
+        if (!discordClientId) {
+            throw new Error("NEXT_PUBLIC_DISCORD_CLIENT_ID is not defined in environment variables.");
+        }
+
+        const discordBaseUrl = `https://${discordClientId}.discordsays.com/api/token`;
+
         return [
             {
-                // 適用するパスを指定（全てのパスに適用する場合は "*"）
-                source: "/(.*)",
+                source: "/(.*)", // 全てのパスに適用
                 headers: [
                     {
                         key: "Content-Security-Policy",
-                        value: "default-src * data: blob: 'unsafe-inline' 'unsafe-eval';", // 全てのリソースを許可
+                        value: `default-src 'self'; connect-src 'self' https://share-mario-maker.vercel.app ${discordBaseUrl};`, // 環境変数を使用
                     },
                 ],
             },

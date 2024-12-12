@@ -83,7 +83,7 @@ export default function Home() {
 
     return (
         <html lang="ja">
-            <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
+            <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px", color: "white" }}>
                 <h1>Discord Activity</h1>
                 <p>{frameId ? `Frame ID: ${frameId}` : "No frame_id found in the URL."}</p>
 
