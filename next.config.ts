@@ -8,20 +8,31 @@ const nextConfig: NextConfig = {
             throw new Error("NEXT_PUBLIC_DISCORD_CLIENT_ID is not defined in environment variables.");
         }
 
-        const discordBaseUrl = `https://${discordClientId}.discordsays.com/api/token`;
+        const discordApiUrl = `https://${discordClientId}.discordsays.com/api/token`;
+        const discordProxyUrl = `https://${discordClientId}.discordsays.com/.proxy/`;
 
         return [
             {
-                source: "/(.*)", // 全てのパスに適用
+                source: "/(.*)",
                 headers: [
                     {
                         key: "Content-Security-Policy",
-                        value: `default-src 'self'; connect-src 'self' https://share-mario-maker.vercel.app ${discordBaseUrl};`, // 環境変数を使用
+                        value: `
+                            default-src 'self'; 
+                            connect-src 
+                                'self' 
+                                https://share-mario-maker.vercel.app 
+                                https://discord.com/api/ 
+                                ${discordApiUrl} 
+                                ${discordProxyUrl} 
+                                wss://${discordClientId}.discordsays.com/.proxy/ 
+                                data: blob:;
+                        `
+                            .replace(/\s+/g, " ")
+                            .trim(),
                     },
                 ],
             },
         ];
     },
 };
-
-export default nextConfig;
