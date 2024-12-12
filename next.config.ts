@@ -1,15 +1,20 @@
-module.exports = {
+import { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
     async headers() {
         return [
             {
-                source: "/(.*)", // すべてのパスに適用
+                // 適用するパスを指定（全てのパスに適用する場合は "*"）
+                source: "/(.*)",
                 headers: [
                     {
                         key: "Content-Security-Policy",
-                        value: "connect-src 'self' https://1309879469544050759.discordsays.com https://discord.com/api/ https://canary.discord.com/api/ https://ptb.discord.com/api/;",
+                        value: "default-src 'none';", // すべてのリソースのロードを禁止
                     },
                 ],
             },
         ];
     },
 };
+
+export default nextConfig;

@@ -82,39 +82,41 @@ export default function Home() {
     }, []);
 
     return (
-        <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
-            <h1>Discord Activity</h1>
-            <p>{frameId ? `Frame ID: ${frameId}` : "No frame_id found in the URL."}</p>
+        <html lang="ja">
+            <div style={{ fontFamily: "Arial, sans-serif", textAlign: "center", marginTop: "50px" }}>
+                <h1>Discord Activity</h1>
+                <p>{frameId ? `Frame ID: ${frameId}` : "No frame_id found in the URL."}</p>
 
-            {!userName ? (
-                <div>
-                    {error ? (
-                        <p style={{ color: "red" }}>{error}</p>
-                    ) : (
-                        <p>Please log in to see your Discord username.</p>
-                    )}
-                    <button
-                        onClick={() => (window.location.href = "/api/login")}
-                        style={{
-                            padding: "10px 20px",
-                            fontSize: "16px",
-                            backgroundColor: "#7289da",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                        }}
-                    >
-                        Login with Discord
-                    </button>
-                </div>
-            ) : (
-                <div>
-                    <p style={{ fontSize: "20px" }}>
-                        Welcome, <strong>{userName}</strong>!
-                    </p>
-                </div>
-            )}
-        </div>
+                {!userName ? (
+                    <div>
+                        {error ? (
+                            <p style={{ color: "red" }}>{error}</p>
+                        ) : (
+                            <p>Please log in to see your Discord username.</p>
+                        )}
+                        <button
+                            onClick={() => (window.location.href = "/api/login")}
+                            style={{
+                                padding: "10px 20px",
+                                fontSize: "16px",
+                                backgroundColor: "#7289da",
+                                color: "white",
+                                border: "none",
+                                borderRadius: "5px",
+                                cursor: "pointer",
+                            }}
+                        >
+                            Login with Discord
+                        </button>
+                    </div>
+                ) : (
+                    <div>
+                        <p style={{ fontSize: "20px" }}>
+                            Welcome, <strong>{userName}</strong>!
+                        </p>
+                    </div>
+                )}
+            </div>
+        </html>
     );
 }
