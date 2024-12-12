@@ -23,6 +23,9 @@ const nextConfig: NextConfig = {
                                 'self' 
                                 https://share-mario-maker.vercel.app 
                                 https://discord.com/api/ 
+                                https://1309879469544050759.discordsays.com
+                                https://discord.com/api/ https://canary.discord.com/api/
+                                https://ptb.discord.com/api/
                                 ${discordApiUrl} 
                                 ${discordProxyUrl} 
                                 wss://${discordClientId}.discordsays.com/.proxy/ 
