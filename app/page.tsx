@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { DiscordSDK } from "@discord/embedded-app-sdk";
+import { DiscordProxy } from "@robojs/patch"; // 追加
 
 export default function Home() {
     const [userName, setUserName] = useState<string | null>(null);
@@ -9,6 +10,9 @@ export default function Home() {
     const [frameId, setFrameId] = useState<string | null>(null);
 
     useEffect(() => {
+        // DiscordProxy.patch() を最初に呼び出す
+        DiscordProxy.patch();
+
         const initializeDiscordSdk = async () => {
             // URLのクエリパラメータを取得
             const urlParams = new URLSearchParams(window.location.search);

@@ -10,6 +10,7 @@
     },
     "dependencies": {
         "@discord/embedded-app-sdk": "^1.7.1",
+        "@robojs/patch": "^0.2.1",
         "@types/axios": "^0.14.4",
         "axios": "^1.7.9",
         "discord.js": "^14.16.3",
