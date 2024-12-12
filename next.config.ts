@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
                 headers: [
                     {
                         key: "Content-Security-Policy",
-                        value: "default-src 'none';", // すべてのリソースのロードを禁止
+                        value: "default-src * data: blob: 'unsafe-inline' 'unsafe-eval';", // 全てのリソースを許可
                     },
                 ],
             },
