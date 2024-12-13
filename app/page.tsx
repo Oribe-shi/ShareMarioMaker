@@ -42,6 +42,8 @@ export default function Home() {
                     scope: ["identify"],
                 });
 
+                console.log("ShareMarioMaker - GetUserName");
+
                 // サーバーからアクセストークンを取得
                 const response = await fetch("/api/token", {
                     method: "POST",
@@ -50,6 +52,8 @@ export default function Home() {
                     },
                     body: JSON.stringify({ code }),
                 });
+
+                console.log("ShareMarioMaker - AccessToken");
 
                 const text = await response.text(); // レスポンスをテキストとして取得して確認
                 console.log(text); // レスポンスの内容をログに出力
