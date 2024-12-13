@@ -11,18 +11,30 @@ export default function Home() {
     const [frameId, setFrameId] = useState<string | null>(null);
 
     useEffect(() => {
+        // DiscordProxy.patch() を最初に呼び出す
         DiscordProxy.patch();
 
         const initializeDiscordSdk = async () => {
+            // URLのクエリパラメータを取得
             const urlParams = new URLSearchParams(window.location.search);
+
+            // 'frame_id'がクエリに含まれているか確認
             const frameIdFromUrl = urlParams.get("frame_id");
             setFrameId(frameIdFromUrl);
+
+            if (!frameIdFromUrl) {
+                console.log("frame_id is not present in the URL.");
+            } else {
+                console.log("frame_id:", frameIdFromUrl);
+            }
 
             const discordSdk = new DiscordSDK(process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!);
 
             try {
+                // SDKの初期化
                 await discordSdk.ready();
 
+                // 認証コードの取得
                 const { code } = await discordSdk.commands.authorize({
                     client_id: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!,
                     response_type: "code",
@@ -31,6 +43,9 @@ export default function Home() {
                     scope: ["identify"],
                 });
 
+                console.log("ShareMarioMaker - GetUserName");
+
+                // サーバーからアクセストークンを取得
                 const response = await fetch("/api/token", {
                     method: "POST",
                     headers: {
@@ -39,9 +54,14 @@ export default function Home() {
                     body: JSON.stringify({ code }),
                 });
 
-                const text = await response.text();
-                const { access_token } = JSON.parse(text);
+                console.log("ShareMarioMaker - GetUserName");
 
+                const text = await response.text(); // レスポンスをテキストとして取得して確認
+                console.log(text); // レスポンスの内容をログに出力
+
+                const { access_token } = JSON.parse(text); // 文字列として受け取ったレスポンスをパース
+
+                // アクセストークンを使用して認証
                 const auth = await discordSdk.commands.authenticate({
                     access_token,
                 });
@@ -51,6 +71,7 @@ export default function Home() {
                     return;
                 }
 
+                // ユーザー情報の取得
                 const user = await fetch("https://discord.com/api/v10/users/@me", {
                     headers: {
                         Authorization: `Bearer ${auth.access_token}`,
@@ -59,15 +80,12 @@ export default function Home() {
                 }).then((response) => response.json());
 
                 setUserName(user.global_name || user.username);
-
-                if (user.avatar) {
-                    const iconUrl = `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
-                    setUserIcon(iconUrl);
-                }
+                setUserIcon(user.avatar ? `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png` : null);
             } catch (error) {
                 if (error instanceof Error) {
                     setError(error.message);
                 } else {
+                    console.error("Error initializing Discord SDK", error);
                     setError("Failed to initialize Discord SDK.");
                 }
             }
@@ -82,23 +100,15 @@ export default function Home() {
             <p>{frameId ? `Frame ID: ${frameId}` : "No frame_id found in the URL."}</p>
 
             {!userName ? (
-                <div>
-                    {error ? <p style={{ color: "red" }}>{error}</p> : <p>Loading...</p>}
-                    <button
-                        onClick={() => (window.location.href = "/api/login")}
-                        style={{
-                            padding: "10px 20px",
-                            fontSize: "16px",
-                            backgroundColor: "#7289da",
-                            color: "white",
-                            border: "none",
-                            borderRadius: "5px",
-                            cursor: "pointer",
-                            marginTop: "20px",
-                        }}
-                    >
-                        Login with Discord
-                    </button>
+                <div
+                    style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        height: "50vh",
+                    }}
+                >
+                    {error ? <p style={{ color: "red" }}>{error}</p> : <p style={{ fontSize: "24px" }}>Loading...</p>}
                 </div>
             ) : (
                 <div>
@@ -108,11 +118,12 @@ export default function Home() {
                     {userIcon && (
                         <img
                             src={userIcon}
-                            alt={`${userName}'s avatar`}
+                            alt="User Avatar"
                             style={{
+                                display: "block",
+                                margin: "20px 25% 20px 25%",
                                 width: "50%",
-                                marginTop: "20px",
-                                borderRadius: "10px",
+                                borderRadius: "10%",
                             }}
                         />
                     )}
