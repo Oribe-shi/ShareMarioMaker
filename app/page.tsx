@@ -51,7 +51,10 @@ export default function Home() {
                     body: JSON.stringify({ code }),
                 });
 
-                const { access_token } = await response.json();
+                const text = await response.text(); // レスポンスをテキストとして取得して確認
+                console.log(text); // レスポンスの内容をログに出力
+
+                const { access_token } = JSON.parse(text); // 文字列として受け取ったレスポンスをパース
 
                 // アクセストークンを使用して認証
                 const auth = await discordSdk.commands.authenticate({
