@@ -14,26 +14,15 @@ export default function Home() {
         DiscordProxy.patch();
 
         const initializeDiscordSdk = async () => {
-            // URLのクエリパラメータを取得
             const urlParams = new URLSearchParams(window.location.search);
-
-            // 'frame_id'がクエリに含まれているか確認
             const frameIdFromUrl = urlParams.get("frame_id");
             setFrameId(frameIdFromUrl);
-
-            if (!frameIdFromUrl) {
-                console.log("frame_id is not present in the URL.");
-            } else {
-                console.log("frame_id:", frameIdFromUrl);
-            }
 
             const discordSdk = new DiscordSDK(process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!);
 
             try {
-                // SDKの初期化
                 await discordSdk.ready();
 
-                // 認証コードの取得
                 const { code } = await discordSdk.commands.authorize({
                     client_id: process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!,
                     response_type: "code",
@@ -42,25 +31,31 @@ export default function Home() {
                     scope: ["identify"],
                 });
 
-                console.log("ShareMarioMaker - GetUserName");
+                console.log("Authorization Code:", code);
 
-                // サーバーからアクセストークンを取得
+                // JSON.stringify の結果を確認
+                const requestBody = JSON.stringify({ code });
+                console.log("Request Body (JSON):", requestBody);
+
+                // サーバーにリクエストを送信
                 const response = await fetch("/api/token", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ code }),
+                    body: requestBody,
                 });
 
-                console.log("ShareMarioMaker - AccessToken");
+                // レスポンスを確認
+                console.log("Response Status:", response.status);
+                const text = await response.text();
+                console.log("Response Text:", text);
 
-                const text = await response.text(); // レスポンスをテキストとして取得して確認
-                console.log(text); // レスポンスの内容をログに出力
+                // JSONに変換してアクセストークンを取得
+                const { access_token } = JSON.parse(text);
+                console.log("Access Token:", access_token);
 
-                const { access_token } = JSON.parse(text); // 文字列として受け取ったレスポンスをパース
-
-                // アクセストークンを使用して認証
+                // アクセストークンで認証
                 const auth = await discordSdk.commands.authenticate({
                     access_token,
                 });
@@ -70,7 +65,6 @@ export default function Home() {
                     return;
                 }
 
-                // ユーザー情報の取得
                 const user = await fetch("https://discord.com/api/v10/users/@me", {
                     headers: {
                         Authorization: `Bearer ${auth.access_token}`,
