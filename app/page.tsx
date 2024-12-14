@@ -23,9 +23,8 @@ export default function Home() {
             setFrameId(frameIdFromUrl);
 
             if (!frameIdFromUrl) {
-                console.log("frame_id is not present in the URL.");
-            } else {
-                console.log("frame_id:", frameIdFromUrl);
+                window.location.href = "/index.html";
+                return;
             }
 
             const discordSdk = new DiscordSDK(process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID!);
